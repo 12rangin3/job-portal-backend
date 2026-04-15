@@ -128,6 +128,11 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 // Apply for job
 router.post('/:id/apply', authenticateToken, async (req, res) => {
   try {
+    // Only job seekers can apply for jobs
+    if (req.user.role === 'employer') {
+      return res.status(403).json({ message: 'Employers cannot apply for jobs. Only job seekers can apply.' });
+    }
+
     const job = await Job.findById(req.params.id);
     if (!job) return res.status(404).json({ message: 'Job not found' });
 
