@@ -80,27 +80,33 @@ router.post('/register', [
 // Login
 router.post('/login', [
   body('email').isEmail().normalizeEmail(),
-  body('password').notEmpty()
+  body('password').notEmpty().trim()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.error('Validation errors:', errors.array());
     return res.status(400).json({ errors: errors.array() });
   }
 
   try {
     const { email, password } = req.body;
+    console.log('🔐 Login attempt for:', email);
 
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('❌ User not found:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
+      console.log('❌ Invalid password for:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
+
+    console.log('✅ Login successful for:', email, 'Role:', user.role);
 
     // Generate token
     const token = jwt.sign(
@@ -119,8 +125,8 @@ router.post('/login', [
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Login error:', error.message, error.stack);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

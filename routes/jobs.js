@@ -37,11 +37,13 @@ router.get('/', async (req, res) => {
       query.salary = { $regex: minSalary, $options: 'i' };
     }
 
-    const skip = (page - 1) * limit;
+    const pageNumber = parseInt(page, 10) || 1;
+    const limitNumber = parseInt(limit, 10) || 10;
+    const skip = (pageNumber - 1) * limitNumber;
     const jobs = await Job.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit))
+      .limit(limitNumber)
       .populate('postedBy', 'name email');
 
     const total = await Job.countDocuments(query);
