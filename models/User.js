@@ -28,6 +28,25 @@ const userSchema = new mongoose.Schema({
     enum: ['jobseeker', 'employer', 'admin'],
     default: 'jobseeker'
   },
+  // Job Seeker profile fields
+  bio: { type: String, maxlength: 500 },
+  skills: [{ type: String }],
+  experience: [{
+    title: String,
+    company: String,
+    duration: String,
+    description: String
+  }],
+  education: [{
+    degree: String,
+    institution: String,
+    year: String,
+    grade: String
+  }],
+  resume: { type: String }, // file path or URL
+  portfolio: { type: String }, // portfolio website URL
+  linkedin: { type: String },
+  github: { type: String },
   // Employer-specific fields
   companyName: { type: String },
   companyWebsite: { type: String },

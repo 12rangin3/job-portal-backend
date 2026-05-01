@@ -25,7 +25,11 @@ export const getProfile = async (req, res) => {
 // Update user profile
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone, email, companyName, companyWebsite, companyDescription } = req.body;
+    const { 
+      name, phone, email, 
+      bio, skills, experience, education, portfolio, linkedin, github,
+      companyName, companyWebsite, companyDescription 
+    } = req.body;
     
     const user = await User.findById(req.user.userId);
     if (!user) {
@@ -35,6 +39,17 @@ export const updateProfile = async (req, res) => {
     if (name) user.name = name;
     if (phone) user.phone = phone;
     if (email) user.email = email;
+    
+    // Update job seeker fields if user is a job seeker
+    if (user.role === 'jobseeker') {
+      if (bio !== undefined) user.bio = bio;
+      if (skills !== undefined) user.skills = skills;
+      if (experience !== undefined) user.experience = experience;
+      if (education !== undefined) user.education = education;
+      if (portfolio !== undefined) user.portfolio = portfolio;
+      if (linkedin !== undefined) user.linkedin = linkedin;
+      if (github !== undefined) user.github = github;
+    }
     
     // Update employer fields if user is an employer
     if (user.role === 'employer') {
@@ -53,6 +68,18 @@ export const updateProfile = async (req, res) => {
       role: user.role
     };
     
+    // Add job seeker fields if applicable
+    if (user.role === 'jobseeker') {
+      userProfile.bio = user.bio;
+      userProfile.skills = user.skills;
+      userProfile.experience = user.experience;
+      userProfile.education = user.education;
+      userProfile.resume = user.resume;
+      userProfile.portfolio = user.portfolio;
+      userProfile.linkedin = user.linkedin;
+      userProfile.github = user.github;
+    }
+    
     // Add employer fields if applicable
     if (user.role === 'employer') {
       userProfile.companyName = user.companyName;
@@ -66,6 +93,30 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+};
+
+// Upload resume
+export const uploadResume = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    user.resume = req.file.path;
+    await user.save();
+
+    res.json({
+      message: 'Resume uploaded successfully',
+      resumePath: req.file.path
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 

@@ -36,6 +36,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve static files (resumes)
+app.use('/uploads', express.static('uploads'));
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/jobportal')
 .then(() => console.log('✅ MongoDB Connected'))
