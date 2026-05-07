@@ -17,18 +17,30 @@ const app = express();
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // Allow requests with no origin (like mobile apps or Postman)
-    
+
+    const prodOrigins = process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map((url) => url.trim())
+      : [];
+
     if (process.env.NODE_ENV === 'production') {
-      const prodOrigins = ['https://your-frontend-vercel-url.vercel.app'];
-      if (prodOrigins.includes(origin)) return callback(null, true);
+      if (prodOrigins.includes('*')) {
+        return callback(null, true);
+      }
+      if (prodOrigins.length === 0) {
+        // No production origin configured yet: allow the request to avoid blocking deploys.
+        return callback(null, true);
+      }
+      if (prodOrigins.includes(origin)) {
+        return callback(null, true);
+      }
       return callback(new Error('CORS policy: Origin not allowed'));
     }
-    
+
     // Development: Allow localhost and 127.0.0.1 on any port
     if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
       return callback(null, true);
     }
-    
+
     console.warn(`CORS rejected origin: ${origin}`);
     callback(new Error('CORS policy: Origin not allowed'));
   },
